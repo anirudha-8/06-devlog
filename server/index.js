@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { connectDB } from "./config/db.js";
 
 dotenv.config();
 
@@ -23,6 +24,9 @@ app.get("/api", (req, res) => {
 app.get("/api/status", (req, res) => {
 	res.send("Server is healthy ✅");
 });
+
+// Connect to database
+connectDB();
 
 // Start Server
 app.listen(port, () => {
