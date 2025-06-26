@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
+import postRoutes from "./routes/postRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ app.get("/api", (req, res) => {
 app.get("/api/status", (req, res) => {
 	res.send("Server is healthy ✅");
 });
+
+// importing post routes
+app.use("/api/posts", postRoutes);
 
 // Connect to database
 connectDB();
