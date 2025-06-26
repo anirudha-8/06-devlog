@@ -1,4 +1,5 @@
 import Post from "../models/Post.js";
+import mongoose from "mongoose";
 
 // @desc    Get all posts
 // @route   GET /api/posts
@@ -25,6 +26,37 @@ export const getAllPosts = async (req, res) => {
 			success: false,
 			message: "Internal Server Error",
 		});
+	}
+};
+
+// @desc 	Get single post by id
+// @route	GET /api/posts/:id
+// @access 	Public
+export const getPostById = async (req, res) => {
+	try {
+		const { id } = req.params;
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return res.status(400).json({
+				success: false,
+				message: "Invalid post ID",
+			});
+		} else {
+			const post = await Post.findById(id);
+			if (!post) {
+				return res.status(404).json({
+					success: false,
+					message: "Post not found!",
+				});
+			}
+			res.status(200).json({
+				success: true,
+				message: "Post found successfully!",
+				data: post,
+			});
+		}
+	} catch (error) {
+		console.error(`getPostById error: ${error.message}`);
+		res.status(500).json({ success: false, message: "Internal Server Error!" });
 	}
 };
 
