@@ -126,3 +126,49 @@ export const deletePost = async (req, res) => {
 		});
 	}
 };
+
+// @desc 	update a post
+// @route 	PUT /api/posts/:id
+// @access 	PUBLIC
+export const updatePost = async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return res
+				.status(400)
+				.json({ success: false, message: "Invalid post ID!" });
+		}
+
+		const { title, content, author, tags } = req.body;
+
+		// Ensure at least one field is present for update
+		if (!title && !content && !author && !tags) {
+			return res.status(400).json({
+				success: false,
+				message: "Please provide at least one field to update!",
+			});
+		}
+
+		const updatedPost = await Post.findByIdAndUpdate(
+			id,
+			{ title, content, author, tags },
+			{ new: true, runValidators: true }
+		);
+
+		if (!updatedPost) {
+			return res
+				.status(404)
+				.json({ success: false, message: "Post not found!" });
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "Post updated successfully!",
+			data: updatedPost,
+		});
+	} catch (error) {
+		console.error(`updatePost error: ${error.message}`);
+		res.status(500).json({ success: false, message: "Internal Server Error!" });
+	}
+};
