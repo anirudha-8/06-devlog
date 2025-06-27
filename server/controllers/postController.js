@@ -89,3 +89,40 @@ export const createPost = async (req, res) => {
 		});
 	}
 };
+
+// @desc 	delete a post
+// @route 	DELETE /api/posts/:id
+// @access 	PUBLIC
+export const deletePost = async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return res.status(400).json({
+				success: false,
+				message: "Invalid post ID!",
+			});
+		}
+
+		const deletedPost = await Post.findByIdAndDelete(id);
+
+		if (!deletedPost) {
+			return res.status(404).json({
+				success: false,
+				message: "Post not found!",
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "Post deleted successfully",
+			data: deletedPost,
+		});
+	} catch (error) {
+		console.error(`deletePost error: ${error.message}`);
+		res.status(500).json({
+			success: false,
+			message: "Internal Server Error!",
+		});
+	}
+};
