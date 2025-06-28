@@ -1,35 +1,51 @@
 import Post from "../models/Post.js";
 import mongoose from "mongoose";
 
-// @desc    Get all posts (with optional search)
-// @route   GET /api/posts?search=keyword
+// @desc    Get all posts (with optional search + pagination)
+// @route   GET /api/posts?search=keyword&page=1&limit=10
 // @access  Public
 export const getAllPosts = async (req, res) => {
 	try {
-		const { search } = req.query;
+		const { search = "", page = 1, limit = 10 } = req.query;
 
-		const query = search
+		const MAX_LIMIT = 100;
+		const currentPage = Math.max(parseInt(page, 10), 1);
+		const perPage = Math.min(Math.max(parseInt(limit, 10), 1), MAX_LIMIT);
+		const skip = (currentPage - 1) * perPage;
+
+		// Sanitize regex input
+		const escapeRegExp = (text) =>
+			text.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
+
+		const safeSearch = escapeRegExp(search.trim());
+
+		const query = safeSearch
 			? {
 					$or: [
-						{ title: { $regex: search, $options: "i" } },
-						{ tags: { $regex: search, $options: "i" } },
+						{ title: { $regex: safeSearch, $options: "i" } },
+						{ tags: { $regex: safeSearch, $options: "i" } },
 					],
 			  }
 			: {};
 
-		const posts = await Post.find(query).sort({ createdAt: -1 });
-
-		if (posts.length === 0) {
-			return res.status(404).json({
-				success: false,
-				message: search ? "No matching posts found!" : "No posts available!",
-			});
-		}
+		const total = await Post.countDocuments(query);
+		const posts = await Post.find(query)
+			.sort({ createdAt: -1 })
+			.skip(skip)
+			.limit(perPage);
 
 		res.status(200).json({
 			success: true,
-			message: "Posts fetched successfully!",
+			message: posts.length
+				? "Posts fetched successfully!"
+				: "No matching posts found!",
 			data: posts,
+			pagination: {
+				total,
+				page: currentPage,
+				pages: Math.ceil(total / perPage),
+				limit: perPage,
+			},
 		});
 	} catch (error) {
 		console.error("getAllPosts error:", error);
