@@ -186,3 +186,36 @@ export const updatePost = async (req, res) => {
 		res.status(500).json({ success: false, message: "Internal Server Error!" });
 	}
 };
+
+// @desc    Filter posts by tag
+// @route   GET /api/posts/tag/:tag
+// @access  Public
+export const filterPostByTags = async (req, res) => {
+	try {
+		const { tag } = req.params;
+		const trimmedTag = tag?.trim();
+
+		const posts = await Post.find({
+			tags: { $regex: new RegExp(`^${trimmedTag}$`, "i") },
+		}).sort({ createdAt: -1 });
+
+		if (posts.length === 0) {
+			return res.status(404).json({
+				success: false,
+				message: `No posts found with the tag: ${tag}`,
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			message: `Found ${posts.length} post(s) with the tag: ${tag}`,
+			data: posts,
+		});
+	} catch (error) {
+		console.error(`filterPostByTags error: ${error.message}`);
+		res.status(500).json({
+			success: false,
+			message: "Internal Server Error",
+		});
+	}
+};

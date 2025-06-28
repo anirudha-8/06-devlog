@@ -6,6 +6,7 @@ import {
 	getPostById,
 	deletePost,
 	updatePost,
+	filterPostByTags,
 } from "../controllers/postController.js";
 
 const router = express.Router();
@@ -24,5 +25,8 @@ router.delete("/:id", deletePost);
 
 // update post route
 router.put("/:id", updatePost);
+
+// filter posts by tags route
+router.get("/tag/:tag", filterPostByTags);
 
 export default router;
