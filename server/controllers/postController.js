@@ -1,23 +1,34 @@
 import Post from "../models/Post.js";
 import mongoose from "mongoose";
 
-// @desc    Get all posts
-// @route   GET /api/posts
+// @desc    Get all posts (with optional search)
+// @route   GET /api/posts?search=keyword
 // @access  Public
 export const getAllPosts = async (req, res) => {
 	try {
-		const posts = await Post.find().sort({ createdAt: -1 });
+		const { search } = req.query;
+
+		const query = search
+			? {
+					$or: [
+						{ title: { $regex: search, $options: "i" } },
+						{ tags: { $regex: search, $options: "i" } },
+					],
+			  }
+			: {};
+
+		const posts = await Post.find(query).sort({ createdAt: -1 });
 
 		if (posts.length === 0) {
 			return res.status(404).json({
 				success: false,
-				message: "No posts found!",
+				message: search ? "No matching posts found!" : "No posts available!",
 			});
 		}
 
 		res.status(200).json({
 			success: true,
-			message: "All posts fetched successfully!",
+			message: "Posts fetched successfully!",
 			data: posts,
 		});
 	} catch (error) {
@@ -35,6 +46,7 @@ export const getAllPosts = async (req, res) => {
 export const getPostById = async (req, res) => {
 	try {
 		const { id } = req.params;
+
 		if (!mongoose.Types.ObjectId.isValid(id)) {
 			return res.status(400).json({
 				success: false,
@@ -42,12 +54,14 @@ export const getPostById = async (req, res) => {
 			});
 		} else {
 			const post = await Post.findById(id);
+
 			if (!post) {
 				return res.status(404).json({
 					success: false,
 					message: "Post not found!",
 				});
 			}
+
 			res.status(200).json({
 				success: true,
 				message: "Post found successfully!",
