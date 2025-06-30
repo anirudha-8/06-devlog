@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import postRoutes from "./routes/postRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ app.get("/api/status", (req, res) => {
 
 // importing post routes
 app.use("/api/posts", postRoutes);
+
+// importing auth routes
+app.use("/api/auth", authRoutes);
 
 // Connect to database
 connectDB();
