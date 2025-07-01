@@ -1,14 +1,7 @@
 import User from "../models/User.js";
-import jwt from "jsonwebtoken";
+import generateToken from "../utils/generateToken.js"; // moved token logic to utils
 
-// Helper to generate JWT
-const generateToken = (userId) => {
-	return jwt.sign({ userId }, process.env.JWT_SECRET, {
-		expiresIn: "7d",
-	});
-};
-
-// @desc    Register new user
+// @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
