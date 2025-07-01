@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
 	getAllPosts,
 	createPost,
@@ -8,25 +7,18 @@ import {
 	updatePost,
 	filterPostByTags,
 } from "../controllers/postController.js";
+import { protect } from "../middlewares/authMiddleware.js"; // ✅ Import the middleware
 
 const router = express.Router();
 
-// get post route
+// Public routes
 router.get("/", getAllPosts);
-
-// get single post by id route
 router.get("/:id", getPostById);
-
-// create post route
-router.post("/", createPost);
-
-// delete post route
-router.delete("/:id", deletePost);
-
-// update post route
-router.put("/:id", updatePost);
-
-// filter posts by tags route
 router.get("/tag/:tag", filterPostByTags);
+
+// Protected routes
+router.post("/", protect, createPost); // ✅ Only logged-in users can create
+router.put("/:id", protect, updatePost); // ✅ Only logged-in users can update
+router.delete("/:id", protect, deletePost); // ✅ Only logged-in users can delete
 
 export default router;
