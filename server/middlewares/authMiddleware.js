@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+// Middleware to protect routes
 export const protect = (req, res, next) => {
 	try {
 		const authHeader = req.headers.authorization;
@@ -16,10 +17,10 @@ export const protect = (req, res, next) => {
 		// Verify token
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-		req.user = decoded.userId; // attach userId to request
+		req.user = { id: decoded.userId }; // attach structured user info
 		next();
 	} catch (error) {
-		console.error("authMiddleware error:", error);
+		console.error("authMiddleware error:", error.message);
 		res.status(401).json({
 			success: false,
 			message: "Invalid or expired token. Access denied.",
