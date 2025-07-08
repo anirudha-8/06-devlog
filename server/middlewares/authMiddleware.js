@@ -13,11 +13,9 @@ export const protect = (req, res, next) => {
 		}
 
 		const token = authHeader.split(" ")[1];
-
-		// Verify token
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-		req.user = { id: decoded.userId }; // attach structured user info
+		req.user = { id: decoded.id }; // ✅ Fix: use correct decoded field
 		next();
 	} catch (error) {
 		console.error("authMiddleware error:", error.message);
