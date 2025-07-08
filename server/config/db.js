@@ -3,11 +3,12 @@ import mongoose from "mongoose";
 export const connectDB = async () => {
 	try {
 		const db_uri = process.env.MONGODB_URI;
+		if (!db_uri) throw new Error("MONGODB_URI not found in environment");
+
 		const connect = await mongoose.connect(db_uri);
-		if (!connect) console.log(`Failed to connect MongoDB database`);
-		else console.log(`Successfully connected to MongoDB`);
+		console.log(`✅ MongoDB connected: ${connect.connection.name}`);
 	} catch (error) {
-		console.error(`Unable to connect to MongoDB: ${error.message}`);
+		console.error(`❌ MongoDB connection error: ${error.message}`);
 		throw error;
 	}
 };
