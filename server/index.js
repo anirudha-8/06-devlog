@@ -27,16 +27,17 @@ app.get("/api/status", (req, res) => {
 	res.send("Server is healthy ✅");
 });
 
-// importing post routes
+// API routes
 app.use("/api/posts", postRoutes);
-
-// importing auth routes
 app.use("/api/auth", authRoutes);
 
-// Connect to database
-connectDB();
-
-// Start Server
-app.listen(port, () => {
-	console.log(`Server is running at http://localhost:${port}`);
-});
+// Connect DB and then start server
+connectDB()
+	.then(() => {
+		app.listen(port, () => {
+			console.log(`🚀 Server is running at http://localhost:${port}`);
+		});
+	})
+	.catch((err) => {
+		console.error("❌ Failed to start server due to DB error:", err);
+	});
