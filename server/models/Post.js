@@ -5,14 +5,17 @@ const postSchema = new mongoose.Schema(
 		title: {
 			type: String,
 			required: true,
+			trim: true,
 		},
 		content: {
 			type: String,
 			required: true,
+			trim: true,
 		},
 		author: {
 			type: String,
 			required: true,
+			trim: true,
 		},
 		tags: {
 			type: [String],
@@ -25,5 +28,4 @@ const postSchema = new mongoose.Schema(
 );
 
 const Post = mongoose.model("Post", postSchema);
-
 export default Post;
