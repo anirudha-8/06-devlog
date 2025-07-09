@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import generateToken from "../utils/generateToken.js"; // moved token logic to utils
+import generateToken from "../utils/generateToken.js";
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -17,7 +17,7 @@ export const registerUser = async (req, res) => {
 
 		const userExists = await User.findOne({ email });
 		if (userExists) {
-			return res.status(400).json({
+			return res.status(409).json({
 				success: false,
 				message: "User already exists with this email.",
 			});
@@ -55,7 +55,7 @@ export const loginUser = async (req, res) => {
 			});
 		}
 
-		const user = await User.findOne({ email });
+		const user = await User.findOne({ email }).select("+password");
 		if (!user || !(await user.matchPassword(password))) {
 			return res.status(401).json({
 				success: false,
