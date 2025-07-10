@@ -1,0 +1,42 @@
+From 862d8d7dd0fe05d4601718de74b67c13968e9929 Mon Sep 17 00:00:00 2001
+From: Anirudha Bele <beleanirudha8@gmail.com>
+Date: Thu, 10 Jul 2025 19:18:43 +0530
+Subject: [PATCH] fix(routes): prevent route conflict by placing /tag/:tag
+ before /:id in post routes
+
+Ensures /tag/:tag is not treated as a dynamic :id route.
+---
+ server/routes/postRoutes.js | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/server/routes/postRoutes.js b/server/routes/postRoutes.js
+index cfd417b..aea1b97 100644
+--- a/server/routes/postRoutes.js
++++ b/server/routes/postRoutes.js
+@@ -7,18 +7,18 @@ import {
+ 	updatePost,
+ 	filterPostByTags,
+ } from "../controllers/postController.js";
+-import { protect } from "../middlewares/authMiddleware.js"; // ✅ Import the middleware
++import { protect } from "../middlewares/authMiddleware.js";
+ 
+ const router = express.Router();
+ 
+ // Public routes
+ router.get("/", getAllPosts);
++router.get("/tag/:tag", filterPostByTags); // ✅ Moved above /:id to avoid route conflict
+ router.get("/:id", getPostById);
+-router.get("/tag/:tag", filterPostByTags);
+ 
+ // Protected routes
+-router.post("/", protect, createPost); // ✅ Only logged-in users can create
+-router.put("/:id", protect, updatePost); // ✅ Only logged-in users can update
+-router.delete("/:id", protect, deletePost); // ✅ Only logged-in users can delete
++router.post("/", protect, createPost);
++router.put("/:id", protect, updatePost);
++router.delete("/:id", protect, deletePost);
+ 
+ export default router;
+-- 
+2.45.2.windows.1
+
