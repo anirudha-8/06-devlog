@@ -7,18 +7,18 @@ import {
 	updatePost,
 	filterPostByTags,
 } from "../controllers/postController.js";
-import { protect } from "../middlewares/authMiddleware.js"; // ✅ Import the middleware
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 // Public routes
 router.get("/", getAllPosts);
+router.get("/tag/:tag", filterPostByTags); // ✅ Moved above /:id to avoid route conflict
 router.get("/:id", getPostById);
-router.get("/tag/:tag", filterPostByTags);
 
 // Protected routes
-router.post("/", protect, createPost); // ✅ Only logged-in users can create
-router.put("/:id", protect, updatePost); // ✅ Only logged-in users can update
-router.delete("/:id", protect, deletePost); // ✅ Only logged-in users can delete
+router.post("/", protect, createPost);
+router.put("/:id", protect, updatePost);
+router.delete("/:id", protect, deletePost);
 
 export default router;
