@@ -22,11 +22,12 @@ export const getAllPosts = async (req, res) => {
 						{ title: { $regex: safeSearch, $options: "i" } },
 						{ tags: { $regex: safeSearch, $options: "i" } },
 					],
-			  }
+				}
 			: {};
 
 		const total = await Post.countDocuments(query);
 		const posts = await Post.find(query)
+			.populate("author", "username email")
 			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(perPage);
@@ -60,7 +61,7 @@ export const getPostById = async (req, res) => {
 				.json({ success: false, message: "Invalid post ID" });
 		}
 
-		const post = await Post.findById(id);
+		const post = await Post.findById(id).populate("author", "username email");
 		if (!post) {
 			return res
 				.status(404)
@@ -76,16 +77,18 @@ export const getPostById = async (req, res) => {
 
 export const createPost = async (req, res) => {
 	try {
-		const { title, content, author, tags = [] } = req.body;
+		const { title, content, tags = [] } = req.body;
+		const userId = req.user.id;
 
-		if (!title || !content || !author) {
+		if (!title || !content) {
 			return res.status(400).json({
 				success: false,
-				message: "Please provide title, content, and author",
+				message: "Please provide title and content",
 			});
 		}
 
-		const newPost = await Post.create({ title, content, author, tags });
+		const newPost = await Post.create({ title, content, author: userId, tags });
+		await newPost.populate("author", "username email");
 
 		res.status(201).json({
 			success: true,
@@ -101,6 +104,7 @@ export const createPost = async (req, res) => {
 export const deletePost = async (req, res) => {
 	try {
 		const { id } = req.params;
+		const userId = req.user.id;
 
 		if (!mongoose.Types.ObjectId.isValid(id)) {
 			return res
@@ -108,12 +112,22 @@ export const deletePost = async (req, res) => {
 				.json({ success: false, message: "Invalid post ID" });
 		}
 
-		const deletedPost = await Post.findByIdAndDelete(id);
-		if (!deletedPost) {
+		const post = await Post.findById(id);
+		if (!post) {
 			return res
 				.status(404)
 				.json({ success: false, message: "Post not found" });
 		}
+
+		// Check if user is the post author
+		if (post.author.toString() !== userId) {
+			return res.status(403).json({
+				success: false,
+				message: "Unauthorized: You can only delete your own posts",
+			});
+		}
+
+		const deletedPost = await Post.findByIdAndDelete(id);
 
 		res.status(200).json({
 			success: true,
@@ -129,7 +143,8 @@ export const deletePost = async (req, res) => {
 export const updatePost = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { title, content, author, tags } = req.body;
+		const { title, content, tags } = req.body;
+		const userId = req.user.id;
 
 		if (!mongoose.Types.ObjectId.isValid(id)) {
 			return res
@@ -137,24 +152,33 @@ export const updatePost = async (req, res) => {
 				.json({ success: false, message: "Invalid post ID" });
 		}
 
-		if (!title && !content && !author && !tags) {
+		if (!title && !content && !tags) {
 			return res.status(400).json({
 				success: false,
 				message: "Please provide at least one field to update",
 			});
 		}
 
-		const updatedPost = await Post.findByIdAndUpdate(
-			id,
-			{ title, content, author, tags },
-			{ new: true, runValidators: true }
-		);
-
-		if (!updatedPost) {
+		const post = await Post.findById(id);
+		if (!post) {
 			return res
 				.status(404)
 				.json({ success: false, message: "Post not found" });
 		}
+
+		// Check if user is the post author
+		if (post.author.toString() !== userId) {
+			return res.status(403).json({
+				success: false,
+				message: "Unauthorized: You can only update your own posts",
+			});
+		}
+
+		const updatedPost = await Post.findByIdAndUpdate(
+			id,
+			{ title, content, tags },
+			{ new: true, runValidators: true },
+		).populate("author", "username email");
 
 		res.status(200).json({
 			success: true,
@@ -174,7 +198,9 @@ export const filterPostByTags = async (req, res) => {
 
 		const posts = await Post.find({
 			tags: { $regex: new RegExp(`^${trimmedTag}$`, "i") },
-		}).sort({ createdAt: -1 });
+		})
+			.populate("author", "username email")
+			.sort({ createdAt: -1 });
 
 		if (!posts.length) {
 			return res.status(404).json({
