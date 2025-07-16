@@ -13,9 +13,9 @@ const postSchema = new mongoose.Schema(
 			trim: true,
 		},
 		author: {
-			type: String,
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
 			required: true,
-			trim: true,
 		},
 		tags: {
 			type: [String],
@@ -24,7 +24,7 @@ const postSchema = new mongoose.Schema(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
 const Post = mongoose.model("Post", postSchema);
