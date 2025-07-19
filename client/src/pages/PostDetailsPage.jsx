@@ -39,7 +39,7 @@ const PostDetailsPage = () => {
 		<article className="bg-white p-6 rounded shadow">
 			<h1 className="text-3xl font-bold mb-4">{post.title}</h1>
 			<p className="text-gray-500 text-sm mb-2">
-				Posted by <strong>{post.author}</strong> on{" "}
+				Posted by <strong>{post.author.username}</strong> on{" "}
 				{new Date(post.createdAt).toLocaleDateString()}
 			</p>
 			<div className="mb-4 space-x-2">
