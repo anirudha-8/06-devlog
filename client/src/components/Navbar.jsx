@@ -1,20 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 const Navbar = () => {
-	const [user, setUser] = useState(null);
 	const navigate = useNavigate();
-
-	// Get user from localStorage
-	useEffect(() => {
-		const storedUser = localStorage.getItem("user");
-		setUser(storedUser ? JSON.parse(storedUser) : null);
-	}, []);
+	const { user, logout } = useAuth();
 
 	const handleLogout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		setUser(null);
+		logout();
 		navigate("/login");
 	};
 
@@ -29,6 +21,18 @@ const Navbar = () => {
 					{user ? (
 						<>
 							<span className="text-gray-700">Welcome, {user.username}!</span>
+							<Link
+								to="/create-post"
+								className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+							>
+								+ New Post
+							</Link>
+							<Link
+								to="/my-posts"
+								className="text-blue-600 border border-blue-600 px-4 py-2 rounded hover:bg-blue-100"
+							>
+								My Posts
+							</Link>
 							<button
 								onClick={handleLogout}
 								className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
