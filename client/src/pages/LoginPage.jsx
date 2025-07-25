@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const LoginPage = () => {
 	const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ const LoginPage = () => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const navigate = useNavigate();
+	const { login } = useAuth();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -17,16 +19,15 @@ const LoginPage = () => {
 		try {
 			const { data } = await API.post("/auth/login", { email, password });
 
-			// Save token to localStorage
-			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			// Use AuthContext to login
+			login(data.token, data.user);
 
 			// Navigate to home
 			navigate("/");
 		} catch (err) {
 			setError(
 				err?.response?.data?.message ||
-					"Something went wrong. Please try again."
+					"Something went wrong. Please try again.",
 			);
 		} finally {
 			setLoading(false);
@@ -75,11 +76,18 @@ const LoginPage = () => {
 				<button
 					type="submit"
 					disabled={loading}
-					className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+					className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
 				>
 					{loading ? "Logging in..." : "Login"}
 				</button>
 			</form>
+
+			<p className="text-center text-gray-600 mt-4">
+				Don't have an account?{" "}
+				<Link to="/register" className="text-blue-600 hover:underline">
+					Register here
+				</Link>
+			</p>
 		</div>
 	);
 };
