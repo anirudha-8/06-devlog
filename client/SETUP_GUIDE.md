@@ -39,7 +39,7 @@ npm run build
 
 ## Project Structure
 
-```
+```js
 client/
 ├── src/
 │   ├── components/
