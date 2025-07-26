@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const RegisterPage = () => {
 	const navigate = useNavigate();
+	const { login } = useAuth();
 	const [formData, setFormData] = useState({
 		username: "",
 		email: "",
@@ -24,14 +26,14 @@ const RegisterPage = () => {
 		try {
 			const { data } = await API.post("/auth/register", formData);
 
-			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			// Use AuthContext to login
+			login(data.token, data.user);
 
 			navigate("/");
 		} catch (err) {
 			setError(
 				err?.response?.data?.message ||
-					"Something went wrong. Please try again."
+					"Something went wrong. Please try again.",
 			);
 		} finally {
 			setLoading(false);
@@ -93,11 +95,18 @@ const RegisterPage = () => {
 				<button
 					type="submit"
 					disabled={loading}
-					className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+					className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
 				>
 					{loading ? "Registering..." : "Register"}
 				</button>
 			</form>
+
+			<p className="text-center text-gray-600 mt-4">
+				Already have an account?{" "}
+				<Link to="/login" className="text-blue-600 hover:underline">
+					Login here
+				</Link>
+			</p>
 		</div>
 	);
 };
