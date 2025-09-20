@@ -40,7 +40,8 @@ const HomePage = () => {
 								{post.content.slice(0, 200)}...
 							</p>
 							<div className="text-sm text-gray-500">
-								Posted by <strong>{post.author.username}</strong> on{" "}
+								Posted by{" "}
+								<strong>{post.author?.username || "Unknown Author"}</strong> on{" "}
 								{new Date(post.createdAt).toLocaleDateString()}
 							</div>
 							<Link
